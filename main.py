@@ -11,7 +11,6 @@ import threading
 from websocket import create_connection
 import os
 import sys
-import socket
 import random
 import string
 from Crypto.Cipher import AES
