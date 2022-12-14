@@ -50,20 +50,6 @@ class trader():
         if (com!=None) and (ro!=None) and (type(ro)==int) and (type(com)==int):
             self.commission =com
             self.rond =ro
-            
-        key=entry_trader["propertise"]['token_machin'].split(":")
-        key_user=key[0]
-        key_second=key[1]
-        
-        t=[i for i in list(key_second) if i.isdigit()]
-        t=(len(t))*2
-        key=(key_second[int(-t/2)::] + key_user[int(-t/2)::]).encode()
-        
-        with open('key.json','rb') as f:
-            source = f.read().decode()
-        t=self.decrypt(key, source, decode=True)
-        t=t.decode()
-        self.chek_dic=eval(t)
         
     def creat_accuont(self):
         def accuo():
@@ -1289,7 +1275,6 @@ class trader():
                     entry_trader={"st": 0, "leverage": 0, "sl": 0, "sellorbuy": None,'stopPrice_sl':0,'stop_trail':0,
                                   'symbol':'XRPUSDTM',"get_signal":0,
                                   "propertise":{"sl":0.03,"number_user":None,'rond':None,
-                                                "token_machin":None,
                                                 'commission':None, "number_user_proxy":8 ,'change_st_leverage':0 ,
                                                 "limit_money":100}}
                     json.dump(entry_trader, open('entry_trader.json', 'w'))
@@ -1297,100 +1282,17 @@ class trader():
             except Exception as error:
                 pass
 
-            
-        os_type = sys.platform.lower()
-        command=None
-        if "darwin" in os_type:
-            command = "ioreg -l | grep IOPlatformSerialNumber"
-        elif "win" in os_type:
-            command = "wmic bios get serialnumber"
-        elif "linux" in os_type:
-            command = "dmidecode -s baseboard-serial-number"
-        self.id=list(os.popen(command).read().replace("\n", "").replace("  ", "").replace(" ", ""))
-
-        nu=[int(i) for i in self.id if i.isdigit()]
-        plusone=[i+1 for i in nu]
-        minuseone=[i-1 for i in nu]
-        plustwo=[i+2 for i in nu]
-        plusthree=[i+4 for i in nu]
-        minusetwo=[i-3 for i in nu]
-        minusethree=[i-2 for i in nu]
-        allnumber=plusone+minuseone+plustwo+plusthree +minusetwo+minusethree
-        allnumber=[i for i in allnumber if (i<10) and (i>0)]
-        allnumber=[str(i) for i in allnumber]
-        me=0
-        while 1:
-            time.sleep(0.05)
-            try:
-                entry_trader=json.load(open("entry_trader.json"))
-                if entry_trader["propertise"]['token_machin']!=None:
-                    break
-                elif me==0:
-                    print("enter your key")
-                    me=1
-            except Exception as error:
-                pass
-
-        id_cheke=None
-        self.runpricetr=0
-        for i in allnumber:
-            if i not in entry_trader["propertise"]['token_machin']:
-                id_cheke=False
-                break
-        if id_cheke==False:
-            command=None
-        else:
-            self.runpricetr=1
-            
-        if (command==None) and (self.id==None):
-            json.dump({"st": 0, "leverage": 0, "sl": 0, "sellorbuy": None,'stopPrice_sl':0,'stop_trail':0,
-                          'symbol':'XRPUSDTM',"get_signal":0,
-                          "propertise":{"sl":0.03,"number_user":None,'rond':None,"token_machin":None,
-                                        'commission':None, "number_user_proxy":8 ,'change_st_leverage':0 ,
-                                        "limit_money":100}},
-                      open('entry_trader.json', 'w'))
-        allnumber=allnumber + list(entry_trader["propertise"]['token_machin'][-2::])
-        return allnumber,entry_trader
+        self.runpricetr=1
+        return entry_trader
 
     def control_position(self):
         
-        allnumber,entry_trader=self.user_get()
-        while 1:
-            time.sleep(0.05)
-            try:
-                entry_trader=json.load(open("entry_trader.json"))
-                if entry_trader["propertise"]['token_machin']!=None:
-                    break
-            except Exception as error:
-                pass
-
-        id_cheke=None
-        dic=None
-        for i in allnumber:
-            if i not in entry_trader["propertise"]['token_machin']:
-                id_cheke=False
-                break
-
-        for k,v in self.chek_dic.items():
-            if entry_trader["propertise"]['token_machin'][int(k)]!=self.chek_dic[k]:
-                dic=False
-                break
+        entry_trader=self.user_get()
                 
-        numsecond=[int(i) for i in allnumber]
-        numsecond=((sum(numsecond))*2-748)**2
-        t=entry_trader["propertise"]['token_machin'].split(":")
-        t=[i for i in t[1] if i.isdigit()]
-        t=int(("".join(t))[0:-2])
-        if t!=numsecond:
-            dic=False
-            print("dic: ",dic)
         x=1
-        if (id_cheke==False) or (dic==False):
-            print(id_cheke,dic)
-            x=0
-        else:
-            self.detail_accuonts=self.creat_accuont()
-        while id_cheke==None:
+
+        self.detail_accuonts=self.creat_accuont()
+        while 1:
             time.sleep(0.05)
             try:
                 self.lot_size()
@@ -1403,13 +1305,11 @@ class trader():
         entry_trader["propertise"]['number_user']=len([*self.detail_accuonts])
         json.dump(entry_trader, open('entry_trader.json', 'w'))
 
-        if (id_cheke!=False) or (dic!=False):
-            thread=threading.Thread(target=self.runprice)
-            thread.start()
-            thread=threading.Thread(target=self.refresh_runprice)
-            thread.start()
+        thread=threading.Thread(target=self.runprice)
+        thread.start()
+        thread=threading.Thread(target=self.refresh_runprice)
+        thread.start()
 
-        print('x=',x)
         while x==1:
             time.sleep(0.05)
             while x==1:
@@ -1496,17 +1396,8 @@ while 1:
 
 g=0
 try:
-    s = socket.socket()
-    host = socket.gethostname()
-    port = 12346
-    s.bind((host, port))
     trade=trader()
-    g=1
     trade.control_position()
 except Exception as error:
     print(error)
-    if g==0:
-        print("more program")
-        time.sleep(3)
-    if g==1:
-        trade.PrintException()
+    trade.PrintException()
