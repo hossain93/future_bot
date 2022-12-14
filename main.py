@@ -33,7 +33,6 @@ class trader():
         self.touched_sl =0
         self.sl_tp =None
         self.base_uri = 'https://api-futures.kucoin.com'
-        self.id=None
         self.touched_st =0
         self.one_lot=None
         self.api_correct=[]
